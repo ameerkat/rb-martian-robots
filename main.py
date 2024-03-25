@@ -9,33 +9,43 @@ class RobotState:
 
 class World:
     def _get_initial_world(width, height):
-        # We'll represent the world as a 2D array of booleans. True means that
-        # a robot was lost at that cell. False means the cell is in it's default
-        # state and a robot can go out of bounds from it. In theory we can 
-        # represent the world with just the perimeter as per the problem statement. 
-        # But for simplicity we'll represent the whole world.
+        # We'll represent the world as a 2D array of booleans. The world representation
+        # is slightly larger than the actual world. We include the coordinates the robot
+        # can fall off the grid at. True means that a robot was lost at that cell. 
+        # False means the cell is in it's default state and a robot can go out of 
+        # bounds from it. 
+        # In theory we can represent the world with just the perimeter, or even using
+        # a dictionary for the invalid coordinates. But for simplicity we'll 
+        # represent the whole world since the total size is negligible for a 50x50 grid.
 
         # Note the coordinate system is flipped. The bottom left is 0, 0 but
         # internally that's the top left of our 2D array. This is a consideration
         # when debugging the world state.
-        return [[False for x in range(width)] for y in range(height)]
+        return [[False for x in range(width + 1)] for y in range(height + 1)]
 
     def __init__(self, width, height):
         self.width = width
         self.height = height
+
+        if (width <= 0 or width > 50 or height <= 0 or height > 50):
+            raise ValueError(f"Invalid world dimensions: {width}, {height}. Min 1, Max 50.")
         self.world = World._get_initial_world(width, height)
 
-    def reset(self):
-        # Resets the entire world state. Do NOT call between robots. This is
-        # to reset the entire world state, will whipe any robot out of bound
-        # indicators.
-        self.world = World._get_initial_world(self.width, self.height)
-
     def run_robot(self, x, y, direction, instructions):
-        if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
-            raise ValueError(f"Invalid starting position: {x}, {y}")
+        # if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
+        #     raise ValueError(f"Invalid starting position: {x}, {y}")
 
-        print(x, y, direction, instructions)
+        # As per the sample data output we'll co-erce the input coordinates
+        # to be within the world bounds rather than throwing an error.
+        if x < 0:
+            x = 0
+        elif x >= self.width:
+            x = self.width - 1
+        
+        if y < 0:
+            y = 0
+        elif y >= self.height:
+            y = self.height - 1
 
         # This is the actual logic to run the robots. This does mutate the world.
         # Because the actions of the robot are dictated by the word, we will
@@ -44,26 +54,32 @@ class World:
         robot = RobotState(x, y, direction)
         for instruction in instructions:
             out_of_bounds_check_required = False
+            out_of_bounds_x = robot.x
+            out_of_bounds_y = robot.y
 
             if instruction == "F":
                 if robot.direction == "N":
                     if robot.y == self.height - 1: # The robot is at the top of the world and is about to go out of bounds.
                         out_of_bounds_check_required = True
+                        out_of_bounds_y = robot.y + 1
                     else:
                         robot.y += 1
                 elif robot.direction == "E":
                     if robot.x == self.width - 1: # The robot is at the right of the world and is about to go out of bounds.
                        out_of_bounds_check_required = True
+                       out_of_bounds_x = robot.x + 1
                     else:
                         robot.x += 1
                 elif robot.direction == "S":
                     if robot.y == 0: # The robot is at the bottom of the world and is about to go out of bounds.
                        out_of_bounds_check_required = True
+                       out_of_bounds_y = robot.y - 1
                     else:
                         robot.y -= 1
                 elif robot.direction == "W":
                     if robot.x == 0: # The robot is at the left of the world and is about to go out of bounds.
                         out_of_bounds_check_required = True
+                        out_of_bounds_x = robot.x - 1
                     else:
                         robot.x -= 1
                 else:
@@ -96,8 +112,9 @@ class World:
             if out_of_bounds_check_required:
                 # False means the robot can go out of bounds. True means
                 # a previous robot was lost here and we ignore the instruction.
-                if not self.world[robot.y][robot.x]:
-                    self.world[robot.y][robot.x] = True
-                    return robot.x, robot.y, robot.direction, "LOST"
+                if not self.world[out_of_bounds_y][out_of_bounds_x]:
+                    self.world[out_of_bounds_y][out_of_bounds_x] = True
+                    # Note when we lose the robot we print the coordinate it was lost at
+                    return out_of_bounds_x, out_of_bounds_y, robot.direction, "LOST"
            
         return robot.x, robot.y, robot.direction
