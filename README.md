@@ -1,3 +1,27 @@
+# Usage
+## Running Tests
+You need `pytest` on your system to run the tests. There are no non-standard
+library dependencies, so you can simply `pip3 install pytest` or equivalent
+on your system, or set up a virtual environment and install the `requirements.txt`
+via `pip3 install -r requirements.txt`.
+
+To run tests run `pytest`.
+
+## Running Sample Data Files
+You can run the sample data by calling the script e.g. `python3 main.py sample_data.txt`, passing
+the file you want to process as the first positional parameter.
+
+## Running Sample Data Online
+You can also run sample data from the web with a simple lambda interface at
+`https://f55xysqwn6dfq3ry55d4jk52lu0mzrgr.lambda-url.us-east-1.on.aws/`. The interface
+is all contained in lambda_handler and has a text area you can paste your data
+to process.
+
+### Deployment
+Updating the lambda is easy, you can run this lamdba yourself by copying the
+entire main as the lambda function code. There are no external dependencies so
+packaging is not necessary.
+
 # Design Decisions
 ## Repository
 Github was chosen as it's globally recognized, and mention was made by RB that
@@ -25,27 +49,3 @@ languages considered (Java, C#, JS) are more complex.
 is not a priority but a nice quality of life feature that is easily achievable 
 with Python. In an actual client scenario this enables non-technical users
 easy access without a lot of effort or maintainence.
-
-# Usage
-## Running Tests
-You need `pytest` on your system to run the tests. There are no non-standard
-library dependencies, so you can simply `pip3 install pytest` or equivalent
-on your system, or set up a virtual environment and install the `requirements.txt`
-via `pip3 install -r requirements.txt`.
-
-To run tests run `pytest`.
-
-## Running Sample Data Files
-You can run the sample data by calling the script e.g. `python3 main.py sample_data.txt`, passing
-the file you want to process as the first positional parameter.
-
-## Running Sample Data Online
-You can also run sample data from the web with a simple lambda interface at
-`https://f55xysqwn6dfq3ry55d4jk52lu0mzrgr.lambda-url.us-east-1.on.aws/`. The interface
-is all contained in lambda_handler and has a text area you can paste your data
-to process.
-
-### Deployment
-Updating the lambda is easy, you can run this lamdba yourself by copying the
-entire main as the lambda function code. There are no external dependencies so
-packaging is not necessary.
