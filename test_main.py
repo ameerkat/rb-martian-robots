@@ -7,7 +7,7 @@ def test_run_sample_data():
     world = World(5, 3) # 6x4 grid for top coordinates 5,3
     assert world.run_robot(1, 1, "E", "RFRFRFRF") == (1, 1, "E")
     assert world.run_robot(3, 2, "N", "FRRFLLFFRRFLL") == (3, 3, "N", "LOST")
-    world.run_robot(0, 3, "W", "LLFFFLFLFL") == (2, 3, "S")
+    assert world.run_robot(0, 3, "W", "LLFFFLFLFL") == (2, 3, "S")
 
 def test_world_too_big():
     try:
@@ -59,6 +59,19 @@ FRRFLLFFRRFLL
 0 3 W
 LLFFFLFLFL""".split("\n"))
     assert result == [(1, 1, "E"), (3, 3, "N", "LOST"), (2, 3, "S")]
+
+def test_run_data_with_empty_instructions():
+    result = run_data("""5 3
+1 1 E
+RFRFRFRF
+                      
+3 2 N
+
+              
+0 3 W
+LF""".split("\n"))
+    print(result)
+    assert result == [(1, 1, "E"), (3, 2, "N"), (0, 2, "S")]
 
 def test_missing_run_data():
     try:

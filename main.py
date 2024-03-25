@@ -132,16 +132,19 @@ def run_data(lines):
     top_x_coordinate, top_y_coordinate = map(int, world_data)
     world = World(top_x_coordinate, top_y_coordinate)
 
-    # Remove all empty lines from the input data. So we're just left with
-    # the robot data in line pairs.
-    lines = [line.strip() for line in lines[1:] if line.strip() != ""]
-    for i in range(0, len(lines), 2):
-        x, y, direction = lines[i].split()
-        if (i + 1 >= len(lines)):
+    line_i = 1 # skip the first line which is the world data
+    while line_i < len(lines):
+        # skip over the line that breaks up the robot data
+        if lines[line_i].strip() == "":
+            line_i += 1
+            continue
+        x, y, direction = lines[line_i].split()
+        if (line_i + 1 >= len(lines)):
             raise ValueError("Invalid robot data. Missing instructions.")
-        instructions = lines[i + 1].strip()
+        instructions = lines[line_i + 1].strip()
         x, y = map(int, [x, y])
         result.append(world.run_robot(x, y, direction, instructions))
+        line_i += 2
     
     return result
 
@@ -190,7 +193,7 @@ def lambda_handler(event, context):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Martian Robots")
-    parser.add_argument("file", help="The input file name containing the formatted world and robot data as per the problem statement specfiications.", type=str)
+    parser.add_argument("file", help="The input file name containing the formatted world and robot data as per the problem statement specifications.", type=str)
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
