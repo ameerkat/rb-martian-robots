@@ -27,3 +27,12 @@ with Python. In an actual client scenario this enables non-technical users
 easy access without a lot of effort or maintainence.
 
 # Usage
+## Running Tests
+You need `pytest` on your system to run the tests. There are no non-standard
+library dependencies, so you can simply `pip3 install pytest` or equivalent
+on your system, or set up a virtual environment and install the `requirements.txt`
+via `pip3 install -r requirements.txt`.
+
+To run tests run `pytest`.
+
+## 
