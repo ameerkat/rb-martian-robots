@@ -31,12 +31,6 @@ World class is then wrapped to expose it to different interfaces such as a CLI
 and a small lambda based web interface.
 
 # Design Decisions
-## Repository
-Github was chosen as it's globally recognized, and mention was made by RB that
-there was some familiarity with Github. The repository is set as private. The
-reasons being it contains a copy of the problem statement for context and also
-may contain a deployed Lambda URL for ease of testing.
-
 ## Coding Language
 After reviewing the project statement **Python** was chosen as the language of 
 choice due to the following properties
