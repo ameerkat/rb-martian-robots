@@ -18,9 +18,17 @@ is all contained in lambda_handler and has a text area you can paste your data
 to process.
 
 ### Deployment
-Updating the lambda is easy, you can run this lamdba yourself by copying the
-entire main as the lambda function code. There are no external dependencies so
-packaging is not necessary.
+You can run this lamdba yourself by copying the entire main as the lambda 
+function code with lambda_handler (the default name anyway) as the entry point. 
+There are no external dependencies so packaging is not necessary.
+
+# Solution Discussion
+The approach taken was to let the world contain the logic to run the simulation,
+represented by the class World. The robots (class RobotState) act as a 
+container for coordinates and direction. The world owns the
+interface to run the simulation, and tracks where robots fall off the grid. The
+World class is then wrapped to expose it to different interfaces such as a CLI
+and a small lambda based web interface.
 
 # Design Decisions
 ## Repository
