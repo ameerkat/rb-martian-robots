@@ -15,18 +15,24 @@ class RobotState:
 
 class World:
     def _get_initial_world(width, height):
-        # We'll represent the world as a 2D array of booleans. The world representation
-        # is slightly larger than the actual world. We include the coordinates the robot
-        # can fall off the grid at. True means that a robot was lost at that cell. 
-        # False means the cell is in it's default state and a robot can go out of 
-        # bounds from it. 
-        # In theory we can represent the world with just the perimeter, or even using
-        # a dictionary for the invalid coordinates. But for simplicity we'll 
-        # represent the whole world since the total size is negligible for a 50x50 grid.
+        """
+        Returns a 2D array representing the world for a world of width x height.
 
-        # Note the coordinate system is flipped. The bottom left is 0, 0 but
-        # internally that's the top left of our 2D array. This is a consideration
-        # when debugging the world state.
+        We represent the world as a 2D array of booleans. These can be expanded
+        later if we need additional state for locations in the world. For now
+        state is simply
+        
+        True: A robot was lost at this cell.
+        False: A robot can go out of bounds from this cell. This is the initial state.
+        
+        In theory we can represent the world with just the perimeter, or even using
+        a dictionary for the invalid coordinates. But for simplicity we'll 
+        represent the whole world since the total data usage is negligible for a 50x50 grid.
+        
+        Also note the coordinate system is flipped, both in that y coordinate
+        is passed first to an array, and that the y coordinate is flipped as 0
+        is the bottom. This is a consideration when printing or debugging the world state.
+        """
         return [[False for x in range(width)] for y in range(height)]
 
     def __init__(self, top_x_coordinate, top_y_coorindate):
@@ -38,13 +44,17 @@ class World:
         self.world = World._get_initial_world(self.width, self.height)
 
     def run_robot(self, x, y, direction, instructions):
+        """
+        Runs a robot from a starting position and direction with a set of instructions.
+        """
+
         if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
             raise ValueError(f"Invalid starting position: {x}, {y}")
 
         # This is the actual logic to run the robots. This does mutate the world.
-        # Because the actions of the robot are dictated by the word, we will
-        # simply use the robot as a container for the robot state rather than
-        # any logic.
+        # Because the actions of the robot are dictated by the world, and robots
+        # can mutate the world through falling off, we will simply use the robot 
+        # as a container for the robot state rather than any logic.
         robot = RobotState(x, y, direction)
         for instruction in instructions:
             out_of_bounds_check_required = False
@@ -102,13 +112,16 @@ class World:
                 # a previous robot was lost here and we ignore the instruction.
                 if not self.world[robot.y][robot.x]:
                     self.world[robot.y][robot.x] = True
-                    # Note when we lose the robot we print the coordinate it was lost at
                     return robot.x, robot.y, robot.direction, "LOST"
         
         return robot.x, robot.y, robot.direction
 
 
 def run_data(lines):
+    """
+    Takes a list of lines and runs the simulation, returning a list of result states.
+    """
+
     result = []
 
     world_data = lines[0].split()
