@@ -52,7 +52,7 @@ class World:
             raise ValueError(f"Invalid starting position: {x}, {y}")
 
         # TODO this function is getting to the length where I would split it.
-        
+
         # This is the actual logic to run the robots. This does mutate the world.
         # Because the actions of the robot are dictated by the world, and robots
         # can mutate the world through falling off, we will simply use the robot 
@@ -164,6 +164,8 @@ def lambda_handler(event, context):
     elif event["requestContext"]["http"]["method"] == "POST":
         if event["isBase64Encoded"]: # base 64 decode body if necessary
             event["body"] = base64.b64decode(event["body"]).decode("utf-8")
+        # remove "data=" from the form encoded body, for more complex
+        # implementations we should parse out the form data properly.
         data = urllib.parse.unquote_plus(event["body"][5:])
         print(data)
         lines = data.split("\n")
