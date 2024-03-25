@@ -1,4 +1,7 @@
 import argparse
+import json
+import base64
+import urllib.parse
 
 class RobotState:
     def __init__(self, x, y, direction):
@@ -9,10 +12,8 @@ class RobotState:
         self.y = y
         self.direction = direction
 
+
 class World:
-    # TODO there is a bug where the value we get initially is the upper right coordinate
-    # not the width and height of the world. We need to change all bound checks.
-    
     def _get_initial_world(width, height):
         # We'll represent the world as a 2D array of booleans. The world representation
         # is slightly larger than the actual world. We include the coordinates the robot
@@ -26,31 +27,19 @@ class World:
         # Note the coordinate system is flipped. The bottom left is 0, 0 but
         # internally that's the top left of our 2D array. This is a consideration
         # when debugging the world state.
-        return [[False for x in range(width + 1)] for y in range(height + 1)]
+        return [[False for x in range(width)] for y in range(height)]
 
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, top_x_coordinate, top_y_coorindate):
+        self.width = top_x_coordinate + 1
+        self.height = top_y_coorindate + 1
 
-        if (width <= 0 or width > 50 or height <= 0 or height > 50):
-            raise ValueError(f"Invalid world dimensions: {width}, {height}. Min 1, Max 50.")
-        self.world = World._get_initial_world(width, height)
+        if (self.width <= 0 or self.width > 51 or self.height <= 0 or self.height > 51):
+            raise ValueError(f"Invalid world dimensions: {self.width}, {self.height}. Min 1, Max 50.")
+        self.world = World._get_initial_world(self.width, self.height)
 
     def run_robot(self, x, y, direction, instructions):
-        # if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
-        #     raise ValueError(f"Invalid starting position: {x}, {y}")
-
-        # As per the sample data output we'll co-erce the input coordinates
-        # to be within the world bounds rather than throwing an error.
-        if x < 0:
-            x = 0
-        elif x >= self.width:
-            x = self.width - 1
-        
-        if y < 0:
-            y = 0
-        elif y >= self.height:
-            y = self.height - 1
+        if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
+            raise ValueError(f"Invalid starting position: {x}, {y}")
 
         # This is the actual logic to run the robots. This does mutate the world.
         # Because the actions of the robot are dictated by the word, we will
@@ -59,32 +48,26 @@ class World:
         robot = RobotState(x, y, direction)
         for instruction in instructions:
             out_of_bounds_check_required = False
-            out_of_bounds_x = robot.x
-            out_of_bounds_y = robot.y
 
             if instruction == "F":
                 if robot.direction == "N":
                     if robot.y == self.height - 1: # The robot is at the top of the world and is about to go out of bounds.
                         out_of_bounds_check_required = True
-                        out_of_bounds_y = robot.y + 1
                     else:
                         robot.y += 1
                 elif robot.direction == "E":
                     if robot.x == self.width - 1: # The robot is at the right of the world and is about to go out of bounds.
                        out_of_bounds_check_required = True
-                       out_of_bounds_x = robot.x + 1
                     else:
                         robot.x += 1
                 elif robot.direction == "S":
                     if robot.y == 0: # The robot is at the bottom of the world and is about to go out of bounds.
                        out_of_bounds_check_required = True
-                       out_of_bounds_y = robot.y - 1
                     else:
                         robot.y -= 1
                 elif robot.direction == "W":
                     if robot.x == 0: # The robot is at the left of the world and is about to go out of bounds.
                         out_of_bounds_check_required = True
-                        out_of_bounds_x = robot.x - 1
                     else:
                         robot.x -= 1
                 else:
@@ -117,21 +100,22 @@ class World:
             if out_of_bounds_check_required:
                 # False means the robot can go out of bounds. True means
                 # a previous robot was lost here and we ignore the instruction.
-                if not self.world[out_of_bounds_y][out_of_bounds_x]:
-                    self.world[out_of_bounds_y][out_of_bounds_x] = True
+                if not self.world[robot.y][robot.x]:
+                    self.world[robot.y][robot.x] = True
                     # Note when we lose the robot we print the coordinate it was lost at
-                    return out_of_bounds_x, out_of_bounds_y, robot.direction, "LOST"
-           
+                    return robot.x, robot.y, robot.direction, "LOST"
+        
         return robot.x, robot.y, robot.direction
-    
+
+
 def run_data(lines):
     result = []
 
     world_data = lines[0].split()
     if (len(world_data) != 2):
         raise ValueError("Invalid world spec. Must have 2 components width and height.")
-    world_width, world_height = map(int, world_data)
-    world = World(world_width, world_height)
+    top_x_coordinate, top_y_coordinate = map(int, world_data)
+    world = World(top_x_coordinate, top_y_coordinate)
 
     # Remove all empty lines from the input data. So we're just left with
     # the robot data in line pairs.
@@ -143,6 +127,47 @@ def run_data(lines):
         result.append(world.run_robot(x, y, direction, instructions))
     
     return result
+
+
+def lambda_handler(event, context):
+    print(json.dumps(event))
+    if event["requestContext"]["http"]["method"] == "GET":
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "text/html"
+            },
+            "body": """
+<form method="POST">
+    <textarea name="data"></textarea>
+    <button type="submit">Submit</button>
+</form>
+        """
+        }
+    elif event["requestContext"]["http"]["method"] == "POST":
+        if event["isBase64Encoded"]: # base 64 decode body if necessary
+            event["body"] = base64.b64decode(event["body"]).decode("utf-8")
+        data = urllib.parse.unquote_plus(event["body"][5:])
+        print(data)
+        lines = data.split("\n")
+        try:
+            result_lines = run_data(lines)
+            return {
+                "statusCode": 200,
+                "headers": {
+                    "Content-Type": "text/plain"
+                },
+                "body": "\n".join(" ".join(map(str, line)) for line in result_lines)
+            }
+        except Exception as e:
+            return {
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "text/plain"
+                },
+                "body": str(e)
+            }
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Martian Robots")

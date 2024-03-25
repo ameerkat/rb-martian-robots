@@ -38,3 +38,8 @@ To run tests run `pytest`.
 ## Running Sample Data Files
 You can run the sample data by calling the script e.g. `python3 main.py sample_data.txt`, passing
 the file you want to process as the first positional parameter.
+
+## Running Sample Data Online
+You can also run sample data from the web with a simple lambda interface at
+`https://f55xysqwn6dfq3ry55d4jk52lu0mzrgr.lambda-url.us-east-1.on.aws/`. The interface
+is all contained in lambda_handler.
