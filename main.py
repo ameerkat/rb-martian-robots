@@ -96,8 +96,8 @@ class World:
             if out_of_bounds_check_required:
                 # False means the robot can go out of bounds. True means
                 # a previous robot was lost here and we ignore the instruction.
-                if not self.world[robot.x][robot.y]:
-                    self.world[robot.x][robot.y] = True
+                if not self.world[robot.y][robot.x]:
+                    self.world[robot.y][robot.x] = True
                     return robot.x, robot.y, robot.direction, "LOST"
            
         return robot.x, robot.y, robot.direction
