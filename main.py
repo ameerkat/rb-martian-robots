@@ -1,3 +1,5 @@
+import argparse
+
 class RobotState:
     def __init__(self, x, y, direction):
         if direction not in ["N", "E", "S", "W"]:
@@ -118,3 +120,34 @@ class World:
                     return out_of_bounds_x, out_of_bounds_y, robot.direction, "LOST"
            
         return robot.x, robot.y, robot.direction
+    
+def run_data(lines):
+    result = []
+
+    world_data = lines[0].split()
+    if (len(world_data) != 2):
+        raise ValueError("Invalid world spec. Must have 2 components width and height.")
+    world_width, world_height = map(int, world_data)
+    world = World(world_width, world_height)
+
+    # Remove all empty lines from the input data. So we're just left with
+    # the robot data in line pairs.
+    lines = [line.strip() for line in lines[1:] if line.strip() != ""]
+    for i in range(0, len(lines), 2):
+        x, y, direction = lines[i].split()
+        instructions = lines[i + 1].strip()
+        x, y = map(int, [x, y])
+        result.append(world.run_robot(x, y, direction, instructions))
+    
+    return result
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Martian Robots")
+    parser.add_argument("file", help="The input file name containing the formatted world and robot data as per the problem statement specfiications.", type=str)
+    args = parser.parse_args()
+
+    with open(args.file, "r") as f:
+        all_lines = f.readlines()
+        result_lines = run_data(all_lines)
+        for line in result_lines:
+            print(" ".join(map(str, line)))
