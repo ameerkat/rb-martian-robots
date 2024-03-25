@@ -1,3 +1,12 @@
+class RobotState:
+    def __init__(self, x, y, direction):
+        if direction not in ["N", "E", "S", "W"]:
+            raise ValueError(f"Invalid direction: {direction}")
+        
+        self.x = x
+        self.y = y
+        self.direction = direction
+
 class World:
     def _get_initial_world(width, height):
         # We'll represent the world as a 2D array of booleans. True means that
@@ -5,6 +14,10 @@ class World:
         # state and a robot can go out of bounds from it. In theory we can 
         # represent the world with just the perimeter as per the problem statement. 
         # But for simplicity we'll represent the whole world.
+
+        # Note the coordinate system is flipped. The bottom left is 0, 0 but
+        # internally that's the top left of our 2D array. This is a consideration
+        # when debugging the world state.
         return [[False for x in range(width)] for y in range(height)]
 
     def __init__(self, width, height):
@@ -12,23 +25,79 @@ class World:
         self.height = height
         self.world = World._get_initial_world(width, height)
 
-    def _translate_coordinate_to_index(self, x, y):
-        # The world is represented where the origin is at the bottom left
-        # and the top right is (width, height). This is in contrast to our array
-        # indices where 0,0 is top left and width, height is bottom right. We 
-        # need to translate the coordinates to the 2D array index at initialization.
-
-        # By separating out the translation logic, we can put a robot where it should
-        # be and keep the directionality the same. N can remain "up" a row.
-        return (x, self.height - y - 1)
-    
-    def _translate_index_to_coordinate(self, i, j):
-        # When we need to return the coordinates to the user, we need to translate
-        # the 2D array index back to the coordinate system.
-        return (i, self.height - j - 1)
-
     def reset(self):
+        # Resets the entire world state. Do NOT call between robots. This is
+        # to reset the entire world state, will whipe any robot out of bound
+        # indicators.
         self.world = World._get_initial_world(self.width, self.height)
 
-    def run(self, robot):
-        pass
+    def run_robot(self, x, y, direction, instructions):
+        if (x < 0 or x >= self.width) or (y < 0 or y >= self.height):
+            raise ValueError(f"Invalid starting position: {x}, {y}")
+
+        print(x, y, direction, instructions)
+
+        # This is the actual logic to run the robots. This does mutate the world.
+        # Because the actions of the robot are dictated by the word, we will
+        # simply use the robot as a container for the robot state rather than
+        # any logic.
+        robot = RobotState(x, y, direction)
+        for instruction in instructions:
+            out_of_bounds_check_required = False
+
+            if instruction == "F":
+                if robot.direction == "N":
+                    if robot.y == self.height - 1: # The robot is at the top of the world and is about to go out of bounds.
+                        out_of_bounds_check_required = True
+                    else:
+                        robot.y += 1
+                elif robot.direction == "E":
+                    if robot.x == self.width - 1: # The robot is at the right of the world and is about to go out of bounds.
+                       out_of_bounds_check_required = True
+                    else:
+                        robot.x += 1
+                elif robot.direction == "S":
+                    if robot.y == 0: # The robot is at the bottom of the world and is about to go out of bounds.
+                       out_of_bounds_check_required = True
+                    else:
+                        robot.y -= 1
+                elif robot.direction == "W":
+                    if robot.x == 0: # The robot is at the left of the world and is about to go out of bounds.
+                        out_of_bounds_check_required = True
+                    else:
+                        robot.x -= 1
+                else:
+                    raise ValueError(f"Invalid direction: {robot.direction}")
+            elif instruction == "L":
+                if robot.direction == "N":
+                    robot.direction = "W"
+                elif robot.direction == "E":
+                    robot.direction = "N"
+                elif robot.direction == "S":
+                    robot.direction = "E"
+                elif robot.direction == "W":
+                    robot.direction = "S"
+                else:
+                    raise ValueError(f"Invalid direction: {robot.direction}")
+            elif instruction == "R":
+                if robot.direction == "N":
+                    robot.direction = "E"
+                elif robot.direction == "E":
+                    robot.direction = "S"
+                elif robot.direction == "S":
+                    robot.direction = "W"
+                elif robot.direction == "W":
+                    robot.direction = "N"
+                else:
+                    raise ValueError(f"Invalid direction: {robot.direction}")
+            else:
+                raise ValueError(f"Invalid instruction: {instruction}")
+            
+            if out_of_bounds_check_required:
+                # False means the robot can go out of bounds. True means
+                # a previous robot was lost here and we ignore the instruction.
+                if not self.world[robot.x][robot.y]:
+                    self.world[robot.x][robot.y] = True
+                    return robot.x, robot.y, robot.direction, "LOST"
+           
+        return robot.x, robot.y, robot.direction
