@@ -1,6 +1,8 @@
 from main import World
 from main import lambda_handler, run_data
 
+# TODO we could make more assertions about the kind of errors that are raised.
+
 def test_run_sample_data():
     world = World(5, 3) # 6x4 grid for top coordinates 5,3
     assert world.run_robot(1, 1, "E", "RFRFRFRF") == (1, 1, "E")
@@ -58,8 +60,34 @@ FRRFLLFFRRFLL
 LLFFFLFLFL""".split("\n"))
     assert result == [(1, 1, "E"), (3, 3, "N", "LOST"), (2, 3, "S")]
 
-# TODO these tests can be expanded into more tests that see what happens
-# when the format of the input file is malformed.
+def test_missing_run_data():
+    try:
+        result = run_data("""5 3
+    1 1 E
+    RFRFRFRF
+                        
+    3 2 N
+    FRRFLLFFRRFLL
+                        
+    0 3 W""".split("\n"))
+        assert False
+    except ValueError as e:
+        assert e
+
+def test_malformed_initial_robot_state_run_data():
+    try:
+        result = run_data("""5 3
+    1 1 E
+    RFRFRFRF
+                        
+    3 2 N
+    FRRFLLFFRRFLL
+                        
+    0 3
+    LLFFFLFLFL""".split("\n"))
+        assert False
+    except ValueError as e:
+        assert e
 
 def test_lambda_entry_post():
     response = lambda_handler({

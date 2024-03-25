@@ -135,6 +135,8 @@ def run_data(lines):
     lines = [line.strip() for line in lines[1:] if line.strip() != ""]
     for i in range(0, len(lines), 2):
         x, y, direction = lines[i].split()
+        if (i + 1 >= len(lines)):
+            raise ValueError("Invalid robot data. Missing instructions.")
         instructions = lines[i + 1].strip()
         x, y = map(int, [x, y])
         result.append(world.run_robot(x, y, direction, instructions))
