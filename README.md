@@ -35,4 +35,6 @@ via `pip3 install -r requirements.txt`.
 
 To run tests run `pytest`.
 
-## 
+## Running Sample Data Files
+You can run the sample data by calling the script e.g. `python3 main.py sample_data.txt`, passing
+the file you want to process as the first positional parameter.

@@ -10,6 +10,9 @@ class RobotState:
         self.direction = direction
 
 class World:
+    # TODO there is a bug where the value we get initially is the upper right coordinate
+    # not the width and height of the world. We need to change all bound checks.
+    
     def _get_initial_world(width, height):
         # We'll represent the world as a 2D array of booleans. The world representation
         # is slightly larger than the actual world. We include the coordinates the robot
