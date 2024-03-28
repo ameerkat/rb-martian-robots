@@ -1,17 +1,17 @@
-from main import World
+from main import Mars
 from main import lambda_handler, run_data
 
 # TODO we could make more assertions about the kind of errors that are raised.
 
 def test_run_sample_data():
-    world = World(5, 3) # 6x4 grid for top coordinates 5,3
+    world = Mars(5, 3) # 6x4 grid for top coordinates 5,3
     assert world.run_robot(1, 1, "E", "RFRFRFRF") == (1, 1, "E")
     assert world.run_robot(3, 2, "N", "FRRFLLFFRRFLL") == (3, 3, "N", "LOST")
     assert world.run_robot(0, 3, "W", "LLFFFLFLFL") == (2, 3, "S")
 
 def test_world_too_big():
     try:
-        world = World(51, 51)
+        world = Mars(51, 51)
         assert False
     except ValueError as e:
         assert e
@@ -19,13 +19,13 @@ def test_world_too_big():
 def test_world_too_small():
     try:
         # Note that a 0, 0 world is valid, it's size 1x1
-        world = World(-1, -1)
+        world = Mars(-1, -1)
         assert False
     except ValueError as e:
         assert e
 
 def test_invalid_robot_starting_position():
-    world = World(5, 3)
+    world = Mars(5, 3)
     try:
         world.run_robot(6, 4, "E", "RFRFRFRF")
         assert False
@@ -33,7 +33,7 @@ def test_invalid_robot_starting_position():
         assert e
 
 def test_invalid_direction():
-    world = World(5, 3)
+    world = Mars(5, 3)
     try:
         world.run_robot(0, 0, "T", "RFRFRFRF")
         assert False
@@ -41,7 +41,7 @@ def test_invalid_direction():
         assert e
 
 def test_invalid_instruction():
-    world = World(5, 3)
+    world = Mars(5, 3)
     try:
         world.run_robot(0, 0, "E", "RRLLRB")
         assert False

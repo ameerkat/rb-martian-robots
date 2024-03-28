@@ -24,7 +24,7 @@ There are no external dependencies so packaging is not necessary.
 
 # Solution Discussion
 The approach taken was to let the world contain the logic to run the simulation,
-represented by the class World. The robots (class RobotState) act as a 
+represented by the class World. The robots (class Robot) act as a 
 container for coordinates and direction. The world owns the
 interface to run the simulation, and tracks where robots fall off the grid. The
 World class is then wrapped to expose it to different interfaces such as a CLI
